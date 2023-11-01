@@ -52,6 +52,23 @@ describe("Restaurant and Menu Models", () => {
         );
     });
 
+    test("can update Restaurants", async () => {
+        await Restaurant.bulkCreate(seedRestaurant);
+        const found = await Restaurant.findByPk(1);
+        const updatedRestaurant = await found.update({ name: "BeesApples" });
+        expect(updatedRestaurant).toEqual(
+            expect.objectContaining({
+                name: "BeesApples",
+            })
+        );
+        const newfoundRestaurant = await Restaurant.findByPk(1);
+        expect(newfoundRestaurant).toEqual(
+            expect.objectContaining({
+                name: "BeesApples",
+            })
+        );
+    });
+
     test("can delete Restaurants", async () => {
         await Restaurant.bulkCreate(seedRestaurant);
         const deletedRestaurant = await Restaurant.findOne({
