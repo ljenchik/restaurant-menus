@@ -1,43 +1,68 @@
-const {sequelize} = require('./db')
-const {Restaurant, Menu} = require('./models/index')
-const {
-    seedRestaurant,
-    seedMenu,
-  } = require('./seedData');
+const { db } = require("./db");
+const { Restaurant, Menu } = require("./models/index");
+const { seedRestaurant, seedMenu } = require("./seedData");
 
-describe('Restaurant and Menu Models', () => {
+console.log(seedMenu);
+
+describe("Restaurant and Menu Models", () => {
     /**
      * Runs the code prior to all tests
      */
+
     beforeAll(async () => {
         // the 'sync' method will create tables based on the model class
-        // by setting 'force:true' the tables are recreated each time the 
+        // by setting 'force:true' the tables are recreated each time the
         // test suite is run
-        await sequelize.sync({ force: true });
+        await db.sync({ force: true });
     });
 
-    test('can create a Restaurant', async () => {
-        // TODO - write test
-        expect('NO TEST').toEqual('EXPECTED DATA')
+    test("can create a Restaurant", async () => {
+        const restaurant = new Restaurant("Pink", "Upminster", "Indian");
+        expect(restaurant).toBeInstanceOf(Restaurant);
     });
 
-    test('can create a Menu', async () => {
-        // TODO - write test
-        expect('NO TEST').toEqual('EXPECTED DATA')
+    test("can create a Menu", async () => {
+        const menu = new Menu("Breakfast");
+        expect(menu).toBeInstanceOf(Menu);
     });
 
-    test('can find Restaurants', async () => {
-        // TODO - write test
-        expect('NO TEST').toEqual('EXPECTED DATA')
+    test("can find Restaurants", async () => {
+        await Restaurant.bulkCreate(seedRestaurant);
+        const foundRestaurant = await Restaurant.findOne({
+            where: { name: "AppleBees" },
+        });
+        expect(foundRestaurant).toEqual(
+            expect.objectContaining({
+                name: "AppleBees",
+                location: "Texas",
+                cuisine: "FastFood",
+            })
+        );
     });
 
-    test('can find Menus', async () => {
-        // TODO - write test
-        expect('NO TEST').toEqual('EXPECTED DATA')
+    test("can find Menus", async () => {
+        await Menu.bulkCreate(seedMenu);
+        const foundMenu = await Menu.findOne({
+            where: { title: "Breakfast" },
+        });
+        expect(foundMenu).toEqual(
+            expect.objectContaining({
+                title: "Breakfast",
+            })
+        );
     });
 
-    test('can delete Restaurants', async () => {
-        // TODO - write test
-        expect('NO TEST').toEqual('EXPECTED DATA')
+    test("can delete Restaurants", async () => {
+        await Restaurant.bulkCreate(seedRestaurant);
+        const deletedRestaurant = await Restaurant.findOne({
+            where: { name: "AppleBees" },
+        });
+        expect(deletedRestaurant).toEqual(
+            expect.objectContaining({
+                name: "AppleBees",
+                location: "Texas",
+                cuisine: "FastFood",
+            })
+        );
     });
-})
+});
