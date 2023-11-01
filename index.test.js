@@ -17,13 +17,19 @@ describe("Restaurant and Menu Models", () => {
     });
 
     test("can create a Restaurant", async () => {
-        const restaurant = new Restaurant("Pink", "Upminster", "Indian");
-        expect(restaurant).toBeInstanceOf(Restaurant);
+        const restaurant = await Restaurant.create({
+            name: "Pink",
+            location: "Upminster",
+            cuisine: "Indian",
+        });
+        expect(restaurant.name).toBe("Pink");
+        expect(restaurant.location).toBe("Upminster");
+        expect(restaurant.cuisine).toBe("Indian");
     });
 
     test("can create a Menu", async () => {
-        const menu = new Menu("Breakfast");
-        expect(menu).toBeInstanceOf(Menu);
+        const menu = await Menu.create({ title: "Breakfast" });
+        expect(menu.title).toBe("Breakfast");
     });
 
     test("can find Restaurants", async () => {
