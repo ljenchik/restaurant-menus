@@ -93,4 +93,27 @@ describe("Restaurant and Menu Models", () => {
         await deletedMenu.destroy();
         expect((await Menu.findAll()).length).toEqual(initialLength - 1);
     });
+
+    test("tests one restaurant has many menues association", async () => {
+        const foundRestaurant = await Restaurant.findByPk(1);
+        const foundMenu1 = await Menu.findByPk(1);
+        const foundMenu2 = await Menu.findByPk(2);
+
+        await foundRestaurant.addMenus([foundMenu1, foundMenu2]);
+
+        const associatedMenus = await foundRestaurant.getMenus();
+        expect(associatedMenus.length).toBe(2);
+        expect(associatedMenus[0] instanceof Menu).toBe(true);
+        expect(associatedMenus[1] instanceof Menu).toBe(true);
+        expect(associatedMenus).toEqual(
+            expect.arrayContaining([
+                expect.objectContaining({ title: "Lunch" }),
+            ])
+        );
+        expect(associatedMenus).toEqual(
+            expect.arrayContaining([
+                expect.objectContaining({ title: "Dessert" }),
+            ])
+        );
+    });
 });
