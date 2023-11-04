@@ -14,9 +14,11 @@ describe("Restaurant and Menu Models", () => {
         // by setting 'force:true' the tables are recreated each time the
         // test suite is run
         await db.sync({ force: true });
+        await Restaurant.bulkCreate(seedRestaurant);
+        await Menu.bulkCreate(seedMenu);
     });
 
-    test("can create a Restaurant", async () => {
+    test("can create a restaurant", async () => {
         const restaurant = await Restaurant.create({
             name: "Pink",
             location: "Upminster",
@@ -25,18 +27,20 @@ describe("Restaurant and Menu Models", () => {
         expect(restaurant.name).toBe("Pink");
         expect(restaurant.location).toBe("Upminster");
         expect(restaurant.cuisine).toBe("Indian");
+        expect(restaurant instanceof Restaurant).toBeTruthy();
     });
 
-    test("can create a Menu", async () => {
+    test("can create a menu", async () => {
         const menu = await Menu.create({ title: "Breakfast" });
         expect(menu.title).toBe("Breakfast");
+        expect(menu instanceof Menu).toBeTruthy();
     });
 
-    test("can find Restaurants", async () => {
-        await Restaurant.bulkCreate(seedRestaurant);
+    test("can find a restaurant", async () => {
         const foundRestaurant = await Restaurant.findOne({
             where: { name: "AppleBees" },
         });
+        expect(foundRestaurant instanceof Restaurant).toBeTruthy();
         expect(foundRestaurant).toEqual(
             expect.objectContaining({
                 name: "AppleBees",
@@ -46,11 +50,11 @@ describe("Restaurant and Menu Models", () => {
         );
     });
 
-    test("can find Menus", async () => {
-        await Menu.bulkCreate(seedMenu);
+    test("can find a menu", async () => {
         const foundMenu = await Menu.findOne({
             where: { title: "Breakfast" },
         });
+        expect(foundMenu instanceof Menu).toBeTruthy();
         expect(foundMenu).toEqual(
             expect.objectContaining({
                 title: "Breakfast",
@@ -58,34 +62,35 @@ describe("Restaurant and Menu Models", () => {
         );
     });
 
-    test("can update Restaurants", async () => {
-        await Restaurant.bulkCreate(seedRestaurant);
-        const found = await Restaurant.findByPk(1);
-        const updatedRestaurant = await found.update({ name: "BeesApples" });
-        expect(updatedRestaurant).toEqual(
-            expect.objectContaining({
-                name: "BeesApples",
-            })
-        );
-        const newfoundRestaurant = await Restaurant.findByPk(1);
-        expect(newfoundRestaurant).toEqual(
-            expect.objectContaining({
-                name: "BeesApples",
-            })
-        );
+    test("can update a restaurant", async () => {
+        const foundRestaurant = await Restaurant.findByPk(1);
+        const updatedRestaurant = await foundRestaurant.update({
+            name: "BeesApples",
+        });
+        expect(updatedRestaurant.name).toBe("BeesApples");
+        expect(updatedRestaurant.id).toBe(1);
     });
 
-    test("can delete Restaurants", async () => {
-        await Restaurant.bulkCreate(seedRestaurant);
-        const deletedRestaurant = await Restaurant.findOne({
-            where: { name: "AppleBees" },
-        });
-        expect(deletedRestaurant).toEqual(
-            expect.objectContaining({
-                name: "AppleBees",
-                location: "Texas",
-                cuisine: "FastFood",
-            })
-        );
+    test("can update a menu", async () => {
+        const foundMenu = await Menu.findByPk(1);
+        const updatedMenu = await foundMenu.update({ title: "Dessert" });
+        expect(updatedMenu.title).toBe("Dessert");
+        expect(updatedMenu.id).toBe(1);
+    });
+
+    test("can delete a restaurants", async () => {
+        const deletedRestaurant = await Restaurant.findByPk(3);
+        const initialLength = (await Restaurant.findAll()).length;
+        expect(deletedRestaurant.name).toEqual("Spice Grill");
+        await deletedRestaurant.destroy();
+        expect((await Restaurant.findAll()).length).toEqual(initialLength - 1);
+    });
+
+    test("can delete a menu", async () => {
+        const deletedMenu = await Menu.findByPk(3);
+        const initialLength = (await Menu.findAll()).length;
+        expect(deletedMenu.title).toEqual("Dinner");
+        await deletedMenu.destroy();
+        expect((await Menu.findAll()).length).toEqual(initialLength - 1);
     });
 });
