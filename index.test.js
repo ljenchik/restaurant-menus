@@ -1,6 +1,6 @@
 const { db } = require("./db");
-const { Restaurant, Menu } = require("./models/index");
-const { seedRestaurant, seedMenu } = require("./seedData");
+const { Restaurant, Menu, Item } = require("./models/index");
+const { seedRestaurant, seedMenu, seedItem } = require("./seedData");
 
 console.log(seedMenu);
 
@@ -16,6 +16,7 @@ describe("Restaurant and Menu Models", () => {
         await db.sync({ force: true });
         await Restaurant.bulkCreate(seedRestaurant);
         await Menu.bulkCreate(seedMenu);
+        await Item.bulkCreate(seedItem);
     });
 
     test("can create a restaurant", async () => {
@@ -115,5 +116,61 @@ describe("Restaurant and Menu Models", () => {
                 expect.objectContaining({ title: "Dessert" }),
             ])
         );
+    });
+
+    test("tests one menu has many items association", async () => {
+        const foundMenu = await Menu.findByPk(1);
+        const foundItem1 = await Item.findByPk(1);
+        const foundItem2 = await Item.findByPk(2);
+
+        await foundMenu.addItems([foundItem1, foundItem2]);
+
+        const associatedItems = await foundMenu.getItems();
+        expect(associatedItems.length).toBe(2);
+        expect(associatedItems[0] instanceof Item).toBe(true);
+        expect(associatedItems[1] instanceof Item).toBe(true);
+        expect(associatedItems).toEqual(
+            expect.arrayContaining([
+                expect.objectContaining({ name: "bhindi masala" }),
+            ])
+        );
+        expect(associatedItems).toEqual(
+            expect.arrayContaining([
+                expect.objectContaining({ name: "egusi soup" }),
+            ])
+        );
+        const menu = await Menu.findAll({ include: Item });
+        console.log(JSON.stringify(menu, null, 2));
+        expect(menu[0].Items.length).toBe(2);
+        expect(menu[1].Items.length).toBe(0);
+        expect(menu[2].Items.length).toBe(0);
+    });
+
+    test("tests one belongs to many menus association", async () => {
+        const foundMenu1 = await Menu.findByPk(1);
+        const foundMenu2 = await Menu.findByPk(2);
+        const foundItem = await Item.findByPk(1);
+
+        await foundItem.addMenus([foundMenu1, foundMenu2]);
+
+        const associatedMenus = await foundItem.getMenus();
+        expect(associatedMenus.length).toBe(2);
+        expect(associatedMenus[0] instanceof Menu).toBe(true);
+        expect(associatedMenus[1] instanceof Menu).toBe(true);
+        expect(associatedMenus).toEqual(
+            expect.arrayContaining([
+                expect.objectContaining({ title: "Dessert" }),
+            ])
+        );
+        expect(associatedMenus).toEqual(
+            expect.arrayContaining([
+                expect.objectContaining({ title: "Lunch" }),
+            ])
+        );
+        const item = await Item.findAll({ include: Menu });
+        console.log(JSON.stringify(item, null, 2));
+        expect(item[0].Menus.length).toBe(2);
+        expect(item[1].Menus.length).toBe(1);
+        expect(item[2].Menus.length).toBe(0);
     });
 });
